@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity Order.
+    -->
+    <changeSet id="20220708075913-1" author="duvu">
+        <createTable tableName="tbl_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="reference" type="varchar(255)">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_tbl_order__reference" />
+            </column>
+            <column name="category" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="quantity" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="price" type="double">
+                <constraints nullable="true" />
+            </column>
+            <column name="service_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="description" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="notes" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+        <dropDefaultValue tableName="tbl_order" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="tbl_order" columnName="updated_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <changeSet id="20220708075913-1-data" author="duvu" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/tbl_order.csv"
+                  separator=";"
+                  tableName="tbl_order"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="reference" type="string"/>
+            <column name="category" type="string"/>
+            <column name="quantity" type="numeric"/>
+            <column name="price" type="numeric"/>
+            <column name="service_name" type="string"/>
+            <column name="description" type="string"/>
+            <column name="notes" type="string"/>
+            <column name="user_id" type="numeric"/>
+            <column name="created_at" type="date"/>
+            <column name="updated_at" type="date"/>
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

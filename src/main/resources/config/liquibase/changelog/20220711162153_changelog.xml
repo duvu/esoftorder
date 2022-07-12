@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="beou (generated)" id="1657556517116-1">
+        <createTable tableName="tbl_order">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_orderPK"/>
+            </column>
+            <column name="category" type="VARCHAR(255)"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(255)"/>
+            <column name="price" type="DOUBLE"/>
+            <column name="quantity" type="INT"/>
+            <column name="reference" type="VARCHAR(255)"/>
+            <column name="service_name" type="VARCHAR(255)"/>
+            <column name="updated_at" type="datetime(6)"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="beou (generated)" id="1657556517116-2">
+        <createTable tableName="tbl_user">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_userPK"/>
+            </column>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_login" type="datetime(6)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="phone_number" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(255)"/>
+            <column name="updated_at" type="datetime(6)"/>
+            <column name="username" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="beou (generated)" id="1657556517116-3">
+        <addUniqueConstraint columnNames="reference" constraintName="UC_TBL_ORDERREFERENCE_COL" tableName="tbl_order"/>
+    </changeSet>
+    <changeSet author="beou (generated)" id="1657556517116-4">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="tbl_order" constraintName="FKhyolniflkctr0p6bp4t8me9vj" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_user" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
