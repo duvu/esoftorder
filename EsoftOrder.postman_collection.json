@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "1358c8f4-5557-4235-96a1-a4674d14b428",
+		"name": "EsoftOrder",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2136962"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password\",\n    \"rememberMe\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/authenticate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order Paginator",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX1VTRVIiLCJleHAiOjE2NTU5MTc0NTZ9.t7Vuj2R691i787LG3ko-tsVZgSTkcCxkQVtw4BrK_Sxe4ghGnUdzYs-3O-650eQduTAj79Odje1O1pXD50BTLg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Summary",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImp0aSI6IjEiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjU3NjM2MjIzfQ._CPkklimCh7XoIQiJTlqP5MnePrlGRu-gO7y9s0xGDSkyHU-EUbS4a00kLBf6_UiYuvwpQtw_GhmsifKkgWH4g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/report/summary",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"report",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Summary By User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImp0aSI6IjEiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjU3NjM2MjIzfQ._CPkklimCh7XoIQiJTlqP5MnePrlGRu-gO7y9s0xGDSkyHU-EUbS4a00kLBf6_UiYuvwpQtw_GhmsifKkgWH4g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/report/summaryByUser/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"report",
+						"summaryByUser",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImp0aSI6IjEiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjU3NjM2NjU0fQ.6ffMGOZfkH77abXjXL0XXaiVHe3pRe39NSzt4CRtTesuielU6fChg4LToRDPoEz142soAgC70oz0JPdW1jtJ1A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\n    \"reference\": \"TEst Order 15\",\n    \"category\": \"LUXURY\",\n    \"quantity\": 10,\n    \"price\": 1000,\n    \"service_name\": \"VIDEO_EDITING\",\n    \"description\": \"My Test Order\",\n    \"notes\": \"there is no note now\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getOrderById",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImp0aSI6IjEiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjU3NjUxMzA3fQ.g2NhPzR8CwhHfCoqzz82EqBN5APkioP650rjlPNWnr6x0p5Ce5rIVz-ltOlJql2uSOsoBSz5YyezndSwQq-t9g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/orders/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"orders",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

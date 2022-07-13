@@ -5,16 +5,18 @@ services:
     image: esoftorder
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
-      - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:mysql://esoftorder-mysql:3308/esoftorder?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
-      - SPRING_LIQUIBASE_URL=jdbc:mysql://esoftorder-mysql:3308/esoftorder?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
-      - APP_SLEEP=5 # gives time for other services to boot before the application
+      - SPRING_PROFILES_ACTIVE=prod,api-docs
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://esoftorder-mysql:3306/esoftorder?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+      - SPRING_LIQUIBASE_URL=jdbc:mysql://esoftorder-mysql:3306/esoftorder?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+      - APP_SLEEP=10
+    ports:
+      - 127.0.0.1:8081:8081
+
   esoftorder-mysql:
     image: mysql:8.0.28
-    cap_add:
-      - SYS_NICE
-    # volumes:
-    #   - ~/volumes/esoftOrder/mysql/:/var/lib/mysql/
+    volumes:
+      - ~/volumes/esoftOrder/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=esoftorder

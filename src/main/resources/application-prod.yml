@@ -4,9 +4,10 @@
 
 logging:
   level:
-    ROOT: INFO
-    org.hibernate.SQL: INFO
-    me.duvu.esoftorder: INFO
+    ROOT: DEBUG
+    org.hibernate.SQL: DEBUG
+    me.duvu.esoftorder: DEBUG
+    com.mysql.cj.jdbc: DEBUG
 
 spring:
   devtools:
@@ -20,7 +21,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3308/esoftOrder?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+    url: jdbc:mysql://127.0.0.1:3308/esoftorder?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: root
     password:
     hikari:

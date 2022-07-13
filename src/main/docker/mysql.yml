@@ -6,8 +6,8 @@ services:
     platform: linux/x86_64
     cap_add:
       - SYS_NICE
-    # volumes:
-    #   - ~/volumes/esoftOrder/mysql/:/var/lib/mysql/
+    volumes:
+      - ~/volumes/esoftOrder/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=esoftorder

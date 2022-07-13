@@ -1,0 +1,2 @@
+insert into tbl_user(id, username, password, last_login, created_at, updated_at) values (1, "admin", "password", null, null, null);
+insert into tbl_user(id, username, password, last_login, created_at, updated_at) values (2, "customer", "password", null, null, null);
