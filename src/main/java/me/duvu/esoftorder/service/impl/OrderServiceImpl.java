@@ -5,6 +5,8 @@ import me.duvu.esoftorder.domain.User;
 import me.duvu.esoftorder.repository.OrderRepository;
 import me.duvu.esoftorder.repository.UserRepository;
 import me.duvu.esoftorder.service.OrderService;
+import me.duvu.esoftorder.web.rest.vm.SummaryByUserVM;
+import me.duvu.esoftorder.web.rest.vm.SummaryVM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -108,8 +112,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Optional<Order> findByUserIdAndId(Long userId, Long id) {
         log.debug("Request to get Order : {}/User: {}", id, userId);
-        Order order = orderRepository.findById(id).get();
-        if (order.getUser() != null && order.getUser().getId().equals(userId)) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order != null && order.getUser() != null && order.getUser().getId().equals(userId)) {
             return Optional.of(order);
         } else {
             return Optional.empty();
@@ -120,5 +124,18 @@ public class OrderServiceImpl implements OrderService {
     public void delete(Long id) {
         log.debug("Request to delete Order : {}", id);
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    public SummaryByUserVM summaryByUser(Long userId) {
+        return orderRepository.summaryByUser(userId);
+    }
+
+    @Override
+    public SummaryVM summary(Instant fromDt, Instant toDt) {
+        SummaryVM vm = orderRepository.summary(fromDt, toDt);
+        vm.setFrom(fromDt);
+        vm.setTo(toDt);
+        return vm;
     }
 }

@@ -95,8 +95,6 @@ public class TokenProvider {
     }
 
     public boolean validateToken(String authToken) {
-        System.out.println("Custom Filter for JWT: " + authToken);
-
         try {
             jwtParser.parseClaimsJws(authToken);
 

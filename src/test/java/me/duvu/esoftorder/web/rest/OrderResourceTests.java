@@ -1,20 +1,27 @@
 package me.duvu.esoftorder.web.rest;
 
 import me.duvu.esoftorder.domain.Order;
+import me.duvu.esoftorder.domain.User;
 import me.duvu.esoftorder.domain.enumeration.OrderCategory;
+import me.duvu.esoftorder.domain.enumeration.Role;
 import me.duvu.esoftorder.domain.enumeration.Service;
 import me.duvu.esoftorder.repository.OrderRepository;
+import me.duvu.esoftorder.repository.UserRepository;
+import me.duvu.esoftorder.web.rest.vm.AuthVM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -65,7 +72,36 @@ class OrderResourceTests {
     private static final Instant UPDATED_UPDATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     private static final String ENTITY_API_URL = "/api/orders";
+    private static final String ENTITY_API_USERS_URL = "/api/users";
+
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static final String API_AUTH_URL = "/api/authenticate";
+
+    //--User--
+    private static final String DEFAULT_USERNAME = "AAAAAAAAAA";
+    private static final String UPDATED_USERNAME = "BBBBBBBBBB";
+
+    private static final String DEFAULT_PASSWORD = "AAAAAAAAAA";
+    private static final String UPDATED_PASSWORD = "BBBBBBBBBB";
+
+    private static final String DEFAULT_FIRST_NAME = "AAAAAAAAAA";
+    private static final String UPDATED_FIRST_NAME = "BBBBBBBBBB";
+
+    private static final String DEFAULT_LAST_NAME = "AAAAAAAAAA";
+    private static final String UPDATED_LAST_NAME = "BBBBBBBBBB";
+
+    private static final String DEFAULT_EMAIL = "AAAAAAAAAA";
+    private static final String UPDATED_EMAIL = "BBBBBBBBBB";
+
+    private static final String DEFAULT_PHONE_NUMBER = "AAAAAAAAAA";
+    private static final String UPDATED_PHONE_NUMBER = "BBBBBBBBBB";
+
+    private static final Role DEFAULT_ROLE = Role.ADMIN;
+    private static final Role UPDATED_ROLE = Role.CUSTOMER;
+
+    private static final Instant DEFAULT_LAST_LOGIN = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_LAST_LOGIN = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
 
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
@@ -74,12 +110,16 @@ class OrderResourceTests {
     private OrderRepository orderRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private EntityManager em;
 
     @Autowired
     private MockMvc restOrderMockMvc;
 
     private Order order;
+    private User user;
 
     /**
      * Create an entity for this test.
@@ -88,7 +128,7 @@ class OrderResourceTests {
      * if they test an entity which requires the current entity.
      */
     public static Order createEntity(EntityManager em) {
-        Order order = new Order()
+        return new Order()
             .reference(DEFAULT_REFERENCE)
             .category(DEFAULT_CATEGORY)
             .quantity(DEFAULT_QUANTITY)
@@ -98,8 +138,22 @@ class OrderResourceTests {
             .notes(DEFAULT_NOTES)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT);
-        return order;
     }
+
+    public static User createUser(EntityManager em) {
+        return new User()
+                .username(DEFAULT_USERNAME)
+                .password(DEFAULT_PASSWORD)
+                .firstName(DEFAULT_FIRST_NAME)
+                .lastName(DEFAULT_LAST_NAME)
+                .email(DEFAULT_EMAIL)
+                .phoneNumber(DEFAULT_PHONE_NUMBER)
+                .role(DEFAULT_ROLE)
+                .lastLogin(DEFAULT_LAST_LOGIN)
+                .createdAt(DEFAULT_CREATED_AT)
+                .updatedAt(DEFAULT_UPDATED_AT);
+    }
+
 
     /**
      * Create an updated entity for this test.
@@ -121,18 +175,54 @@ class OrderResourceTests {
         return order;
     }
 
+    private void createUserEntity() throws Exception {
+        // 1. Create the User
+        restOrderMockMvc
+                .perform(post(ENTITY_API_USERS_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(user)))
+                .andExpect(status().isCreated());
+    }
+
+    private String getAccessToken(String userName, String password) throws Exception {
+        AuthVM vm = new AuthVM();
+        vm.setUsername(userName);
+        vm.setPassword(password);
+        vm.setRememberMe(false);
+
+        ResultActions result = restOrderMockMvc.
+                perform(post(API_AUTH_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(vm)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.access_token").isString());
+
+        String resultString = result.andReturn().getResponse().getContentAsString();
+        JacksonJsonParser jsonParser = new JacksonJsonParser();
+        return jsonParser.parseMap(resultString).get("access_token").toString();
+    }
+
     @BeforeEach
     public void initTest() {
+        user = createUser(em);
+        try {
+            this.createUserEntity();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        user = userRepository.findByUsername(DEFAULT_USERNAME).orElse(null);
         order = createEntity(em);
     }
+
+
 
     @Test
     @Transactional
     void createOrder() throws Exception {
         int databaseSizeBeforeCreate = orderRepository.findAll().size();
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Create the Order
         restOrderMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(order)))
+            .perform(post(ENTITY_API_URL)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(order)))
             .andExpect(status().isCreated());
 
         // Validate the Order in the database
@@ -155,12 +245,15 @@ class OrderResourceTests {
     void createOrderWithExistingId() throws Exception {
         // Create the Order with an existing ID
         order.setId(1L);
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
 
         int databaseSizeBeforeCreate = orderRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restOrderMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(order)))
+            .perform(post(ENTITY_API_URL)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(order)))
             .andExpect(status().isBadRequest());
 
         // Validate the Order in the database
@@ -172,11 +265,14 @@ class OrderResourceTests {
     @Transactional
     void getAllOrders() throws Exception {
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
 
         // Get all the orderList
         restOrderMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc")
+                    .header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(order.getId().intValue())))
@@ -195,11 +291,14 @@ class OrderResourceTests {
     @Transactional
     void getOrder() throws Exception {
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
 
         // Get the order
         restOrderMockMvc
-            .perform(get(ENTITY_API_URL_ID, order.getId()))
+            .perform(get(ENTITY_API_URL_ID, order.getId())
+                    .header("Authorization", "Bearer " + accessToken))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(order.getId().intValue()))
@@ -217,14 +316,17 @@ class OrderResourceTests {
     @Test
     @Transactional
     void getNonExistingOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Get the order
-        restOrderMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restOrderMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + accessToken)).andExpect(status().isNotFound());
     }
 
     @Test
     @Transactional
     void putNewOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
 
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
@@ -246,7 +348,7 @@ class OrderResourceTests {
 
         restOrderMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedOrder.getId())
+                put(ENTITY_API_URL_ID, updatedOrder.getId()).header("Authorization", "Bearer " + accessToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtil.convertObjectToJsonBytes(updatedOrder))
             )
@@ -270,13 +372,14 @@ class OrderResourceTests {
     @Test
     @Transactional
     void putNonExistingOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restOrderMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, order.getId())
+                put(ENTITY_API_URL_ID, order.getId()).header("Authorization", "Bearer " + accessToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtil.convertObjectToJsonBytes(order))
             )
@@ -290,13 +393,14 @@ class OrderResourceTests {
     @Test
     @Transactional
     void putWithIdMismatchOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restOrderMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, count.incrementAndGet())
+                put(ENTITY_API_URL_ID, count.incrementAndGet()).header("Authorization", "Bearer " + accessToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtil.convertObjectToJsonBytes(order))
             )
@@ -310,12 +414,15 @@ class OrderResourceTests {
     @Test
     @Transactional
     void putWithMissingIdPathParamOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restOrderMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(order)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(TestUtil.convertObjectToJsonBytes(order)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Order in the database
@@ -326,7 +433,9 @@ class OrderResourceTests {
     @Test
     @Transactional
     void partialUpdateOrderWithPatch() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
 
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
@@ -348,6 +457,7 @@ class OrderResourceTests {
         restOrderMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedOrder.getId())
+                    .header("Authorization", "Bearer " + accessToken)
                     .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedOrder))
             )
@@ -371,7 +481,9 @@ class OrderResourceTests {
     @Test
     @Transactional
     void fullUpdateOrderWithPatch() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
 
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
@@ -394,7 +506,8 @@ class OrderResourceTests {
         restOrderMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedOrder.getId())
-                    .contentType("application/merge-patch+json")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedOrder))
             )
             .andExpect(status().isOk());
@@ -417,6 +530,7 @@ class OrderResourceTests {
     @Test
     @Transactional
     void patchNonExistingOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
@@ -424,6 +538,7 @@ class OrderResourceTests {
         restOrderMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, order.getId())
+                        .header("Authorization", "Bearer " + accessToken)
                     .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(order))
             )
@@ -437,6 +552,7 @@ class OrderResourceTests {
     @Test
     @Transactional
     void patchWithIdMismatchOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
@@ -444,6 +560,7 @@ class OrderResourceTests {
         restOrderMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
+                        .header("Authorization", "Bearer " + accessToken)
                     .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(order))
             )
@@ -457,12 +574,15 @@ class OrderResourceTests {
     @Test
     @Transactional
     void patchWithMissingIdPathParamOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         int databaseSizeBeforeUpdate = orderRepository.findAll().size();
         order.setId(count.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restOrderMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(order)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .content(TestUtil.convertObjectToJsonBytes(order)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Order in the database
@@ -473,14 +593,18 @@ class OrderResourceTests {
     @Test
     @Transactional
     void deleteOrder() throws Exception {
+        String accessToken = getAccessToken(user.getUsername(), user.getPassword());
         // Initialize the database
+        order.setUser(user);
         orderRepository.saveAndFlush(order);
 
         int databaseSizeBeforeDelete = orderRepository.findAll().size();
 
         // Delete the order
         restOrderMockMvc
-            .perform(delete(ENTITY_API_URL_ID, order.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, order.getId())
+                    .header("Authorization", "Bearer " + accessToken)
+                    .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

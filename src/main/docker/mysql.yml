@@ -7,7 +7,7 @@ services:
     cap_add:
       - SYS_NICE
     # volumes:
-    #   - ~/volumes/jhipster/esoftOrder/mysql/:/var/lib/mysql/
+    #   - ~/volumes/esoftOrder/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=esoftorder

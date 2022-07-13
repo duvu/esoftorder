@@ -56,7 +56,7 @@ public class SecurityConfiguration {
             .authorizeRequests()
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            .antMatchers("/api/**").authenticated()
+            .antMatchers("/api/**").permitAll()
         .and()
             .apply(securityConfigurerAdapter());
         return http.build();

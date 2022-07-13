@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 
 import javax.sql.DataSource;
 import java.util.concurrent.Executor;
@@ -56,9 +57,13 @@ public class LiquibaseConfiguration {
         liquibase.setRollbackFile(liquibaseProperties.getRollbackFile());
         liquibase.setTestRollbackOnUpdate(liquibaseProperties.isTestRollbackOnUpdate());
 
-        liquibase.setShouldRun(liquibaseProperties.isEnabled());
-        log.debug("Configuring Liquibase");
-
+        if (env.acceptsProfiles(Profiles.of("prod"))) {
+            liquibase.setShouldRun(false);
+            log.info("No Run");
+        } else {
+            liquibase.setShouldRun(liquibaseProperties.isEnabled());
+            log.debug("Configuring Liquibase");
+        }
         return liquibase;
     }
 }

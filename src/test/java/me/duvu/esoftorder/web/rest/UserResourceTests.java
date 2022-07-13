@@ -4,6 +4,7 @@ import me.duvu.esoftorder.domain.User;
 import me.duvu.esoftorder.domain.enumeration.Role;
 import me.duvu.esoftorder.repository.UserRepository;
 
+import me.duvu.esoftorder.web.rest.vm.AuthVM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +27,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Integration tests for the {@link UserResource} REST controller.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser
@@ -65,6 +63,7 @@ class UserResourceTests {
     private static final Instant UPDATED_UPDATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     private static final String ENTITY_API_URL = "/api/users";
+    private static final String API_AUTH_URL = "/api/authenticate";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static Random random = new Random();
@@ -126,6 +125,28 @@ class UserResourceTests {
     @BeforeEach
     public void initTest() {
         user = createEntity(em);
+    }
+
+    @Test
+    @Transactional
+    void authenticate() throws Exception {
+        int databaseSizeBeforeCreate = userRepository.findAll().size();
+
+        // 1. Create the User
+        restUserMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(user)))
+                .andExpect(status().isCreated());
+
+        // 2. try to login
+        AuthVM vm = new AuthVM();
+        vm.setUsername(user.getUsername());
+        vm.setPassword(user.getPassword());
+        vm.setRememberMe(false);
+        restUserMockMvc.
+                perform(post(API_AUTH_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(vm)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.access_token").isString());
     }
 
     @Test

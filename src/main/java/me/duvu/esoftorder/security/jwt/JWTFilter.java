@@ -33,8 +33,6 @@ public class JWTFilter extends GenericFilterBean {
         String jwt = resolveToken(httpServletRequest);
 
         if (StringUtils.hasText(jwt) && this.tokenProvider.validateToken(jwt)) {
-            System.out.println("Custom Filter for JWT: " + jwt);
-
             Authentication authentication = this.tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
