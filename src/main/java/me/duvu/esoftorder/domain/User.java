@@ -1,5 +1,6 @@
 package me.duvu.esoftorder.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import me.duvu.esoftorder.domain.enumeration.Role;
 import org.hibernate.annotations.Cache;
@@ -29,6 +30,7 @@ public class User implements Serializable {
     @Column(name = "username")
     private String username;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 

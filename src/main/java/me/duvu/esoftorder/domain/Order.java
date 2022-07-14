@@ -1,5 +1,6 @@
 package me.duvu.esoftorder.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import me.duvu.esoftorder.domain.enumeration.OrderCategory;
 import me.duvu.esoftorder.domain.enumeration.Service;
@@ -55,7 +56,7 @@ public class Order implements Serializable {
     private Instant updatedAt = Instant.now();
 
     @ManyToOne
-    @JsonIgnoreProperties(value = { "orders" }, allowSetters = true)
+    @JsonIgnore
     private User user;
 
     public Long getId() {
